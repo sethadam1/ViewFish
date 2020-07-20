@@ -25,6 +25,10 @@ class smallaxe_template {
 		$this->caching = false; 
 		$this->cache_compiled = false; 
 		$this->current_template = false; 
+		$this->replace_empty = false; 
+		if($options['replace_empty']) {
+			$this->replace_empty=true; 
+		}
 		$this->default_fx = ['ucfirst','ucwords','strtoupper','strtolower','htmlspecialchars','trim','nl2br', 'number_format','stripslashes', 'strip_tags', 'md5','intval'];  
 		$this->all_supported = ['addcslashes', 'addslashes', 'bin2hex', 'chop', 'chr', 'chunk_split', 'convert_cyr_string', 'convert_uudecode', 'convert_uuencode', 'count_chars', 'crc32', 'crypt', 'get_html_translation_table', 'hex2bin', 'html_entity_decode', 'htmlentities', 'htmlspecialchars_decode', 'lcfirst', 'ltrim', 'metaphone', 'money_format',  'ord', 'quotemeta', 'rtrim', 'sha1', 'soundex', 'str_rot13', 'str_word_count',  'stripcslashes', 'strlen', 'strrev', 'strtok','floatval','ceil','floor' ];
 		$this->allow_fx = $this->default_fx; 
@@ -149,6 +153,16 @@ class smallaxe_template {
 	}
 
 	/**
+	* replace_empty()
+	*
+	* replace unmatched 
+	* @return void
+	*/		
+	public function replace_empty($toggle=true) { 
+		$this->replace_empty = ($toggle) ? true : false;
+	}
+
+	/**
 	* load_supported_functions()
 	*
 	* loads all known supported functions 
@@ -235,7 +249,7 @@ class smallaxe_template {
 		if(is_array($args)):
 			foreach($args as $k=>$v):  
 				preg_match_all(
-					'/(\{\{)('.$k.')(\|)([A-Za-z0-9-_:|]+)(\}\})/U', $template, $matches
+					'/(\{\{)('.$k.')(\|)([A-Za-z0-9-_:|]+)(!)?(\}\})/U', $template, $matches
 				); 
 				if(is_array($matches)) {
 					foreach($matches[0] as $key=>$pattern):
@@ -243,6 +257,8 @@ class smallaxe_template {
 						$string 	= $v; 
 						$functions	= explode("|",$matches[4][$key]); 
 						foreach($functions as $fx):
+							$ignore = 0; 
+							if('!'==substr($fx, -1)) { $ignore = 1; $fx = str_replace("!",'',$fx); } 
 							switch($fx): //the function name
 								case 'upper': 
 									$string = strtoupper($string); 
@@ -308,11 +324,21 @@ class smallaxe_template {
 				// dynamic placeholder replacement
 				$repl = ['[[uniqid]]','[[year]]','[[timestamp]]','[[datetime]]','[[utcdatetime]]'];
 				$with = [uniqid(), date("Y"), date("U"), date("Y-m-d G:i:s"), gmdate("Y-m-d G:i:s")];
-				$template = str_replace($repl,$with,$template); 	
+				$template = str_ireplace($repl,$with,$template); 	
 				// simple var replacement		
-				$template = str_replace('{{'.$k.'}}',$v,$template); 
+				$template = str_ireplace('{{'.$k.'}}',$v,$template); 
+				$template = str_ireplace('{{'.$k.'!}}',$v,$template);
 			endforeach; 
 		endif; 
+		// strip ignore-if-empty vars
+		$template = preg_replace_callback('/\{\{[A-Za-z0-9-_]+!\}\}/U',function($matches) {
+			return '';	
+		}, $template); 
+		if($this->replace_empty) { 
+			$template = preg_replace_callback('/\{\{[A-Za-z0-9-_]+\}\}/U',function($matches) {
+				return '';	
+			}, $template);
+				}		
 		/* 
 		// this is where we will cache compiled template in the future
 		if($this->cache_compiled) { $this->cache_update($template,$text,$ttl=86400)}
