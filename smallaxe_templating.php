@@ -327,10 +327,6 @@ class smallaxe_template {
 				$template = preg_replace_callback('/([\/\{]\*)([A-Za-z0-9\s]+)(\*[\}|\/])/U',function($matches) {
 					return '';
 				},$template);	 
-				// strip C# style single line comments
-				$template = preg_replace_callback('/\/\/([A-Za-z0-9,\# ]+)/',function($matches) {
-					return '';
-				},$template);
 				// dynamic placeholder replacement
 				$repl = ['[[uniqid]]','[[year]]','[[timestamp]]','[[datetime]]','[[utcdatetime]]'];
 				$with = [uniqid(), date("Y"), date("U"), date("Y-m-d G:i:s"), gmdate("Y-m-d G:i:s")];
