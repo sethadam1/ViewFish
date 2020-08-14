@@ -16,11 +16,7 @@ class smallaxe_template {
 	private $cache_compiled; 
 	private $replace_empty; 
 		
-	function __construct($tmpl_path,$options=[]) {
-		$this->tmpl_path  = $tmpl_path;
-		if('/' != substr($this->tmpl_path, -1)) {
-			$this->tmpl_path."/"; 
-		}
+	function __construct($options=[]) {
 		$this->mc = false; 
 		$this->ttl = 0; 
 		$this->caching = false; 
@@ -42,7 +38,22 @@ class smallaxe_template {
 		$this->default_fx = ['ucfirst','ucwords','strtoupper','strtolower','htmlspecialchars','trim','nl2br', 'number_format','stripslashes', 'strip_tags', 'md5','intval'];  
 		$this->all_supported = ['addcslashes', 'addslashes', 'bin2hex', 'chop', 'chr', 'chunk_split', 'convert_cyr_string', 'convert_uudecode', 'convert_uuencode', 'count_chars', 'crc32', 'crypt', 'get_html_translation_table', 'hex2bin', 'html_entity_decode', 'htmlentities', 'htmlspecialchars_decode', 'lcfirst', 'ltrim', 'metaphone', 'money_format',  'ord', 'quotemeta', 'rtrim', 'sha1', 'soundex', 'str_rot13', 'str_word_count',  'stripcslashes', 'strlen', 'strrev', 'strtok','floatval','ceil','floor','utf8_encode' ];
 		$this->allow_fx = $this->default_fx; 
-	}	
+	}
+	
+	/**
+	* set_template_path()
+	*
+	* @param string $path - the path to the default template directory
+	* @return void
+	*/		
+	public function set_template_path($tmpl_path) {
+		if($tmpl_path) { 
+			$this->tmpl_path  = $tmpl_path;
+			if('/' != substr($this->tmpl_path, -1)) {
+				$this->tmpl_path."/"; 
+			}
+		}
+	}		
 	
 	/**
 	* enable_cache()
@@ -82,6 +93,7 @@ class smallaxe_template {
 		if($this->caching) {
 			$this->mc->add(md5(".".$tmpl),$text,$ttl); 
 		}
+		return; 
 	}	
 
 	/**
@@ -96,6 +108,7 @@ class smallaxe_template {
 		if($this->caching) {
 			$this->mc->set(md5(".".$tmpl),$text,$ttl); 
 		}
+		return; 
 	}	
 
 	/**
@@ -108,6 +121,7 @@ class smallaxe_template {
 		if($this->caching) {
 			$this->mc->delete(md5(".".$tmpl)); 
 		}
+		return; 
 	}	
 
 	/**
