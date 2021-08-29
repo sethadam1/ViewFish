@@ -1,10 +1,10 @@
-# Small Axe Templating
+# ViewFish Templating
 
-Small Axe Templating is a simple PHP templating library that is designed to be extremely simple to use. There are three steps to using a Small Axe template. 
+ViewFish Templating is a simple PHP templating library that is designed to be extremely simple to use. There are three steps to using a ViewFish template. 
 
 First, you instantiate the object and pass it the path to templates. 
 
-*$t = new Smallaxe\smallaxe_template();*
+*$t = new ViewFish\viewfish_template();*
 
 Next, you load your template of choice: 
 
@@ -16,15 +16,15 @@ Finally, you pass an associative array to the rendering function:
 
 That's it. `$html` will now contain your ready-to-go output. 
 
-You can see the output at [code.adamscheinberg.com](https://code.adamscheinberg.com/smallaxe-templating/)
+You can see the output at [code.adamscheinberg.com](https://code.adamscheinberg.com/ViewFish/)
 
-## Working with Small Axe
+## Working with ViewFish
 
 ### Variables 
 
-Small Axe Templating uses double curly braces for template variable, e.g. `{{variable}}`. If a curly-brace-wrapped variable matches an index of your $data array, it will be replaced by the value of that array element your rendered template. If it doesn't match an argument, it will be left alone.  
+ViewFish Templating uses double curly braces for template variable, e.g. `{{variable}}`. If a curly-brace-wrapped variable matches an index of your $data array, it will be replaced by the value of that array element your rendered template. If it doesn't match an argument, it will be left alone.  
 
-Small Axe uses double brackets for dynamic replacement. `[[year]]`, for example, will show the current year.  
+ViewFish uses double brackets for dynamic replacement. `[[year]]`, for example, will show the current year.  
 
 ### Functions 
 You can also manipulate the variable using piped functions, e.g. `{{variable|function}}`. Note that functions can be chained, meaning `{{variable|function1|function2|function3}}` is valid syntax.  
@@ -52,31 +52,31 @@ The following short-hand functions are supported:
 * sub &mdash; wrap output in sub tags
 
 ### Multi-argument functions
-Small Axe templates support multi-argument functions in the format `{{var|function:arg1:arg2:arg3}}`. Currently, you can use the following functions: 
+ViewFish templates support multi-argument functions in the format `{{var|function:arg1:arg2:arg3}}`. Currently, you can use the following functions: 
 
 * substr:offset:length, e.g. `{{str|substr:3:10}}`
 
 You can also use the shortcut function `ellipsis` to trim a string if it exceeds the argument. For example, `{{var|ellipsis:18}}` will trim and append "..." to a $var only if it exceeds 18 characters in length, including spaces. 
 
 ### Extention
-Small Axe can handle other functions in templates using the extend() method. For example:  
+ViewFish can handle other functions in templates using the extend() method. For example:  
 *$t->extend(['function1','function2','function3']);* 
 will add additional functionality to the templating process. 
 
-A few notes: functions will only work if they 1) accept a string with no further arguments and 2) return a string. The functions that Small Axe Templating is known to support are: `addcslashes, addslashes, bin2hex, chop, chr, chunk_split, convert_cyr_string, convert_uudecode, convert_uuencode, count_chars, crc32, crypt, get_html_translation_table, hex2bin, html_entity_decode, htmlentities, htmlspecialchars_decode, lcfirst, ltrim, metaphone, money_format, ord, quotemeta, rtrim, sha1, soundex, str_rot13, str_word_count, stripcslashes, strlen, strrev, strtok, floatval, ceil, floor`
+A few notes: functions will only work if they 1) accept a string with no further arguments and 2) return a string. The functions that ViewFish Templating is known to support are: `addcslashes, addslashes, bin2hex, chop, chr, chunk_split, convert_cyr_string, convert_uudecode, convert_uuencode, count_chars, crc32, crypt, get_html_translation_table, hex2bin, html_entity_decode, htmlentities, htmlspecialchars_decode, lcfirst, ltrim, metaphone, money_format, ord, quotemeta, rtrim, sha1, soundex, str_rot13, str_word_count, stripcslashes, strlen, strrev, strtok, floatval, ceil, floor`
 
-Small Axe will **not** accept the functions _exec(), system(), passthru(),_ or _shell_exec()_ as these functions can create dangerous execution conditions. 
+ViewFish will **not** accept the functions _exec(), system(), passthru(),_ or _shell_exec()_ as these functions can create dangerous execution conditions. 
 
 ### Other syntax
 `{{date|format}}` is supported, where format is an unquoted string using the arguments at php.net/date. 
 
 ### Comments 
-Small Axe templates support multiline comments wrapped in either `{* curly brace star tags *}` Smarty style tags or `/* C style comments */`. They will be stripped from the rendered template.
+ViewFish templates support multiline comments wrapped in either `{* curly brace star tags *}` Smarty style tags or `/* C style comments */`. They will be stripped from the rendered template.
 
-Small Axe templates also support single line comments using the `// double slash` syntax.  
+ViewFish templates also support single line comments using the `// double slash` syntax.  
 
 ### Dynamic Placeholders
-Dynamics placeholders will be replaced in the rendered template, but accept no arguments. 
+Dynamic placeholders will be replaced in the rendered template, but accept no arguments. 
 
 * `[[year]]` will display the current year.  
 * `[[uniqid]]` will generate a unique - [but not unguessable](https://www.php.net/uniqid) - identifier. 
@@ -84,7 +84,7 @@ Dynamics placeholders will be replaced in the rendered template, but accept no a
 * `[[datetime]]` will generate a MySQL compatible timestamp in the current server timezone, e.g. YYYY-mm-dd 24:00:00
 * `[[utcdatetime]]` will generate a MySQL compatible timestamp in UTC, e.g. YYYY-mm-dd 24:00:00
 
-## Interacting with the Small Axe object
+## Interacting with the ViewFish object
 *$t->extend(['function1','function2','function3']);* will allow you to add additional supported functions 
 
 *$t->unextend()* will reset the allowed functions list to the small list of permitted default functions 
@@ -92,13 +92,13 @@ Dynamics placeholders will be replaced in the rendered template, but accept no a
 *$t->load_supported_functions()* will load all known supported string functions
 
 ## Caching
-Small Axe Templating supports a number of in-meory caching operations. In order to use caching, you'll need to have either [Memcache](https://www.php.net/memcache) or [Memcached](https://www.php.net/memcached) enabled. Once you have a Memcached object, you will pass it to your Small Axe object using the _enable_cache()_ method. 
+ViewFish Templating supports a number of in-meory caching operations. In order to use caching, you'll need to have either [Memcache](https://www.php.net/memcache) or [Memcached](https://www.php.net/memcached) enabled. Once you have a Memcached object, you will pass it to your ViewFish object using the _enable_cache()_ method. 
   
 *$t->enable_cache(resource $memcache, int $ttl)* will enable memory caching of uncompiled templates. You can pass a Memcache or Memcached resource to enable to cache. An optional $ttl will specify the "time to live" of your memcached object, which defaults to 300 seconds. You may want to set $ttl to a large number to reduce file system reads. 1 day - 86400 seconds - or 30 days - which is a value of 2592000 - are reasonable numbers for templates that don't change often.   
  
 *$t->uncache()* will delete the memcached entry for a template. If you've made changes to a template with a long $ttl, you can uncache it.   
 
-Small Axe allows you to store compiled templates as well. **You should not use this for user specific data!** You can do this manually or automatically. 
+ViewFish allows you to store compiled templates as well. **You should not use this for user specific data!** You can do this manually or automatically. 
 
 *$t->cache_compiled(true)* will enable the caching of compiled templates. By default, this option is set to false. 
 
@@ -174,7 +174,7 @@ $args['people'] = [
 	['firstname'=>'Veruca', 'lastname'=>'Salt'],
 ];
 
-// create the Small Axe object
+// create the ViewFish object
 $t = new Smallaxe\smallaxe_template('/path/to/templates/');
 
 // load the template 
