@@ -1,13 +1,13 @@
 <?php
 /**
- * Smallaxe templating engine
- * examples: code.smallaxesolutions.com/smallaxe-templating for more
- * source: github.com/sethadam1/smallaxe-templating 
+ * ViewFish // formerly Smallaxe templating engine
+ * examples: code.adamscheinberg.com/ViewFish for more
+ * source: github.com/sethadam1/ViewFish 
  */
  
-namespace Smallaxe;
+namespace ViewFish;
 
-class smallaxe_template { 
+class viewfish_template { 
 	
 	public $tmpl_path;
 	public $mc;
