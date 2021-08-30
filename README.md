@@ -175,7 +175,7 @@ $args['people'] = [
 ];
 
 // create the ViewFish object
-$t = new Smallaxe\smallaxe_template('/path/to/templates/');
+$t = new ViewFish\viewfish_template('/path/to/templates/');
 
 // load the template 
 $template = $t->load_template('template-name.tmpl'); 
