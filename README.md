@@ -4,7 +4,7 @@ ViewFish Templating is a simple PHP templating library that is designed to be ex
 
 First, you instantiate the object and pass it the path to templates. 
 
-*$t = new ViewFish\viewfish_template();*
+*$t = new ViewFish\viewfish();*
 
 Next, you load your template of choice: 
 
@@ -175,7 +175,7 @@ $args['people'] = [
 ];
 
 // create the ViewFish object
-$t = new ViewFish\viewfish_template('/path/to/templates/');
+$t = new ViewFish\viewfish('/path/to/templates/');
 
 // load the template 
 $template = $t->load_template('template-name.tmpl'); 
