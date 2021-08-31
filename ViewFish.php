@@ -7,7 +7,7 @@
  
 namespace ViewFish;
 
-class viewfish_template { 
+class viewfish { 
 	
 	public $tmpl_path;
 	public $mc;
