@@ -346,8 +346,10 @@ class viewfish {
 				$with = [uniqid(), date("Y"), date("U"), date("Y-m-d G:i:s"), gmdate("Y-m-d G:i:s")];
 				$template = str_ireplace($repl,$with,$template); 	
 				// simple var replacement		
-				$template = str_ireplace('{{'.$k.'}}',$v,$template); 
-				$template = str_ireplace('{{'.$k.'!}}',$v,$template);
+				if(is_string($v)) { 
+					$template = str_ireplace('{{'.$k.'}}',$v,$template); 
+					$template = str_ireplace('{{'.$k.'!}}',$v,$template);
+				}
 			endforeach; 
 		endif; 
 		// strip ignore-if-empty vars
