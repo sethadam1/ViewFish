@@ -15,6 +15,7 @@ class viewfish {
 	private $caching;
 	private $cache_compiled; 
 	private $replace_empty; 
+	private $discovered; 
 		
 	function __construct($options=[]) {
 		$this->mc = false; 
@@ -23,6 +24,7 @@ class viewfish {
 		$this->cache_compiled = false; 
 		$this->current_template = false; 
 		$this->replace_empty = false; 
+		$this->discovered = []; 
 		if($options['replace_empty']) {
 			$this->replace_empty = true; 
 		}
@@ -238,6 +240,7 @@ class viewfish {
 	* @return string - Output of the template file. Likely HTML.
     */	
 	function render($template,$args) {
+		$this->discovered = []; 
 		/* the next few lines will extract embedded templates  */ 
 		preg_match_all('/(\{\{\@template file=)([A-Za-z0-9-_.,]+)(\}\})/U',$template,$template_matches); 
 		if(is_array($template_matches)) { foreach($template_matches[2] as $key=>$tm) {
@@ -247,7 +250,9 @@ class viewfish {
 			$repl = $this->render($sub,$sub_data);
 			$template = str_replace($template_matches[0][$key],$repl,$template);			
 		} }
+		unset($template_matches); 
 		/* the above few lines will extract embedded templates  */ 
+				
 		/* loops  */ 
 		unset($matches,$repl); 
 		preg_match_all('/((\{\{\@loop data=)([A-Za-z0-9_= ]+)(\}\}))(.+)((\{\{)\/loop(\}\}))/Uis',$template,$matches);
@@ -272,6 +277,7 @@ class viewfish {
 		/* end loop section */ 
 		if(is_array($args)):
 			foreach($args as $k=>$v):  
+				$v = (string) $v; 
 				preg_match_all(
 					'/(\{\{)('.$k.')(\|)([A-Za-z0-9-_:|]+)(!)?(\}\})/U', $template, $matches
 				); 
@@ -279,6 +285,7 @@ class viewfish {
 					foreach($matches[0] as $key=>$pattern):
 						if(!$pattern) { continue; }  
 						$string 	= $v; 
+						$discovered = $v; 
 						$functions	= explode("|",$matches[4][$key]); 
 						foreach($functions as $fx):
 							$ignore = 0; 
@@ -330,11 +337,15 @@ class viewfish {
 							endswitch; 
 						endforeach; // end functions
 						$template = str_replace($pattern,$string,$template); 
+						if(!empty($pattern)) { $this->discovered[$pattern] = $discovered; }
+						unset($discovered); 
 					endforeach; // end matches
 					unset($matches,$var,$string,$pattern,$functions); 
 				} 
+				
 				// date replacements
 				$template = preg_replace_callback('/(\{\{date\|)([A-Za-z0-9-, |]+)(\}\})/U',function($matches) {
+					$this->discovered[$matches[0]] = date($matches[2]); 
 					return date($matches[2]); 
 				},$template); 	
 				// strip C style and curly star comments
@@ -349,9 +360,27 @@ class viewfish {
 				if(is_string($v)) { 
 					$template = str_ireplace('{{'.$k.'}}',$v,$template); 
 					$template = str_ireplace('{{'.$k.'!}}',$v,$template);
+					if(!empty($k)) { $this->discovered[$k] = $v; }
 				}
 			endforeach; 
 		endif; 
+		
+		/* if statements - this will test for emptiness of a variable */ 
+		preg_match_all('/(\{\{isset )\$([A-Za-z0-9_]+)(\}\})(.+)(\{\{\/isset\}\})/U',$template,$matches1); 
+		//echo "<pre>"; print_r($matches1); echo "</pre>"; 
+		if(is_array($matches1[0])) {
+			foreach($matches1[0] as $k=>$v) { 
+				if(strstr($v,"{{isset ")) { 
+					if(!empty($this->discovered[$matches1[2][$k]])) { 
+						$template = str_replace($v,$matches1[4][$k],$template);
+					} else { 
+						$template = str_replace($v,"",$template);
+					}
+				}
+			} 
+			unset($matches1);
+		} 
+		
 		// strip ignore-if-empty vars
 		$template = preg_replace_callback('/\{\{[A-Za-z0-9-_]+!\}\}/U',function($matches) {
 			return '';	
