@@ -365,9 +365,8 @@ class viewfish {
 			endforeach; 
 		endif; 
 		
-		/* if statements - this will test for emptiness of a variable */ 
+		/* isset statements - this will test for truthiness/emptiness of a variable */ 
 		preg_match_all('/(\{\{isset )\$([A-Za-z0-9_]+)(\}\})(.+)(\{\{\/isset\}\})/U',$template,$matches1); 
-		//echo "<pre>"; print_r($matches1); echo "</pre>"; 
 		if(is_array($matches1[0])) {
 			foreach($matches1[0] as $k=>$v) { 
 				if(strstr($v,"{{isset ")) { 
