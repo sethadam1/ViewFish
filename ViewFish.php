@@ -312,13 +312,18 @@ class viewfish {
 										$fxparts = explode(":",$fx);   
 										$fx2 = $fxparts[0]; 
 										switch($fx2):
-											case 'substr':
+											case 'date': // for formatting dates
+												$string1 = strtotime($string); 
+												$format = $fxparts[1]; 
+												$string = date($format, $string1); 
+												break; 
+											case 'substr': // PHP's substring
 												$string = strtolower($string); 
 												$start = $fxparts[1]; 
 												$length = $fxparts[2]; 
 												$string = substr($string, $start, $length); 
 												break; 
-											case 'ellipsis':
+											case 'ellipsis': // a shortcut for truncation 
 												$strlen = strlen($string);
 												if($strlen>$fxparts[1]) {
 													$string = substr($string, 0, $fxparts[1])."&#8230;"; 
@@ -326,7 +331,7 @@ class viewfish {
 												break; 												
 											default: 
 												break; 	 
-										endswitch; 
+										endswitch;
 									} 
 									if(function_exists($fx)) {
 										if(in_array($fx,$this->allow_fx)) {
