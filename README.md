@@ -16,7 +16,7 @@ Finally, you pass an associative array to the rendering function:
 
 That's it. `$html` will now contain your ready-to-go output. 
 
-You can see the output at [sethadam1.com/code/ViewFish](https://sethadam1.com/code/ViewFish/)
+For examples, visit [sethadam1.com/code/ViewFish/](https://sethadam1.com/code/ViewFish/).
 
 ## Working with ViewFish
 
@@ -155,6 +155,63 @@ $data => Array[
 ]
 </pre>
 
+### Conditionals: isset
+
+ViewFish supports conditional blocks using `{{isset $var}}`. Content inside the block is only rendered if the variable is set and non-empty in your `$data` array.
+
+```Smarty
+{{isset $username}}
+	<p>Welcome back, {{username}}!</p>
+{{/isset}}
+```
+
+You can also use `{{else}}` to provide fallback content:
+
+```Smarty
+{{isset $username}}
+	<p>Welcome back, {{username}}!</p>
+{{else}}
+	<p>Welcome, guest!</p>
+{{/isset}}
+```
+
+### Conditionals: unless
+
+`{{unless}}` is the inverse of `{{isset}}` — it renders content only when the variable is **not** set or is empty.
+
+```Smarty
+{{unless $logged_in}}
+	<p>Please log in to continue.</p>
+{{/unless}}
+```
+
+`{{unless}}` also supports `{{else}}`:
+
+```Smarty
+{{unless $error}}
+	<p>Everything looks good!</p>
+{{else}}
+	<p>Something went wrong: {{error}}</p>
+{{/unless}}
+```
+
+### Default Values
+
+You can provide a default value for any variable using the `default` function. If the variable is not present in your `$data` array, the default value will be used instead.
+
+```Smarty
+{{username|default:"Guest"}}
+{{color|default:'blue'}}
+```
+
+Default values can be combined with other piped functions:
+
+```Smarty
+{{username|default:"guest"|ucwords}}
+```
+
+In this example, if `username` is not set, the output will be "Guest" (the default value passed through `ucwords`).
+
 ### Loops
 You can create loops in templates using the command ```@loop```. You must provide an argument called ```data```, where data is the name of the element in your $data array that itself contains an array of data. For example: 
 
@@ -183,3 +240,29 @@ $template = $t->load_template('template-name.tmpl');
 
 // render the template
 echo $t->render($template,$args); </div></pre>
+
+### Loop Index Variables
+
+Inside a loop, ViewFish automatically provides several meta-variables you can use:
+
+| Variable | Description |
+|----------|-------------|
+| `{{@index}}` | Zero-based index of the current iteration (0, 1, 2, ...) |
+| `{{@count}}` | One-based count of the current iteration (1, 2, 3, ...) |
+| `{{@first}}` | Truthy (`"1"`) on the first iteration, empty string otherwise |
+| `{{@last}}` | Truthy (`"1"`) on the last iteration, empty string otherwise |
+| `{{@total}}` | Total number of items in the loop |
+
+Example using loop indexes:
+
+```Smarty
+<ol>
+{{@loop data=items}}
+	<li class="{{isset $@first}}first-item{{/isset}}">
+		#{{@count}} of {{@total}}: {{name}}
+	</li>
+{{/loop}}
+</ol>
+```
+
+For much documentation and examples, visit [sethadam1.com/code/ViewFish/](https://sethadam1.com/code/ViewFish/).

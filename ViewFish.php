@@ -1,7 +1,7 @@
- <?php
+<?php
 
 /**
- * ViewFish - A PHP templating engine
+ * ViewFish - A secure PHP templating engine
  *
  * @see https://code.adamscheinberg.com/ViewFish
  * @see https://github.com/sethadam1/ViewFish
@@ -374,6 +374,12 @@ class viewfish
         // ── isset conditionals ──
         $template = $this->process_isset($template, $args);
 
+        // ── unless conditionals ──
+        $template = $this->process_unless($template, $args);
+
+        // ── Default values for unmatched variables ──
+        $template = $this->process_defaults($template);
+
         // ── Strip silent placeholders (!) that weren't matched ──
         $template = preg_replace('/\{\{[A-Za-z0-9\-_]+!\}\}/', '', $template);
 
@@ -449,11 +455,20 @@ class viewfish
             }
 
             $repl = '';
+            $total = count($templ_data);
+            $index = 0;
             foreach ($templ_data as $subdata) {
                 if (!is_array($subdata)) {
                     $subdata = ['value' => $subdata];
                 }
+                // Inject loop meta-variables
+                $subdata['@index'] = $index;
+                $subdata['@count'] = $index + 1;
+                $subdata['@first'] = ($index === 0) ? '1' : '';
+                $subdata['@last'] = ($index === $total - 1) ? '1' : '';
+                $subdata['@total'] = $total;
                 $repl .= $this->do_render(trim($template_text), $subdata, $depth + 1);
+                $index++;
             }
             $template = str_replace($pattern, $repl, $template);
         }
@@ -475,7 +490,7 @@ class viewfish
             // Match {{key|functions}} or {{$key|functions}} pattern using the specific key
             $escaped_k = preg_quote($k, '/');
             if (!preg_match_all(
-                '/\{\{\$?' . $escaped_k . '\|([A-Za-z0-9\-_:|]+)(!?)\}\}/U',
+                '/\{\{\$?' . $escaped_k . '\|([A-Za-z0-9\-_:|"\'., ]+)(!?)\}\}/U',
                 $template,
                 $matches
             )) {
@@ -511,24 +526,131 @@ class viewfish
     }
 
     /**
-     * Process {{isset $var}}...{{/isset}} blocks.
+     * Process {{isset $var}}...{{/isset}} and {{isset $var}}...{{else}}...{{/isset}} blocks.
      */
     private function process_isset(string $template, array $args = []): string
     {
-        if (!preg_match_all(
-            '/\{\{isset \$([A-Za-z0-9_]+)\}\}(.+?)\{\{\/isset\}\}/si',
+        $max_iterations = 50;
+        $i = 0;
+
+        // First handle isset with else
+        while ($i++ < $max_iterations && preg_match(
+            '/\{\{isset \$(@?[A-Za-z0-9_]+)\}\}((?:(?!\{\{isset )(?!\{\{\/isset\}\}).)*?)\{\{else\}\}((?:(?!\{\{isset )(?!\{\{\/isset\}\}).)*?)\{\{\/isset\}\}/si',
+            $template,
+            $match
+        )) {
+            $var_name = $match[1];
+            if (isset($args[$var_name]) && $args[$var_name] !== '' && $args[$var_name] !== null) {
+                $template = str_replace($match[0], $match[2], $template);
+            } else {
+                $template = str_replace($match[0], $match[3], $template);
+            }
+        }
+
+        // Then handle isset without else
+        $i = 0;
+        while ($i++ < $max_iterations && preg_match(
+            '/\{\{isset \$(@?[A-Za-z0-9_]+)\}\}((?:(?!\{\{isset )(?!\{\{\/isset\}\}).)*?)\{\{\/isset\}\}/si',
+            $template,
+            $match
+        )) {
+            $var_name = $match[1];
+            if (isset($args[$var_name]) && $args[$var_name] !== '' && $args[$var_name] !== null) {
+                $template = str_replace($match[0], $match[2], $template);
+            } else {
+                $template = str_replace($match[0], '', $template);
+            }
+        }
+
+        return $template;
+    }
+
+    /**
+     * Process {{unless $var}}...{{/unless}} and {{unless $var}}...{{else}}...{{/unless}} blocks.
+     * The inverse of isset — shows content when the variable is NOT set or empty.
+     */
+    private function process_unless(string $template, array $args = []): string
+    {
+        // Process unless blocks iteratively to handle multiple blocks correctly
+        $max_iterations = 50;
+        $i = 0;
+
+        // First handle unless with else (must come first to avoid partial matches)
+        while ($i++ < $max_iterations && preg_match(
+            '/\{\{unless \$(@?[A-Za-z0-9_]+)\}\}((?:(?!\{\{unless )(?!\{\{\/unless\}\}).)*?)\{\{else\}\}((?:(?!\{\{unless )(?!\{\{\/unless\}\}).)*?)\{\{\/unless\}\}/si',
+            $template,
+            $match
+        )) {
+            $var_name = $match[1];
+            if (!isset($args[$var_name]) || $args[$var_name] === '' || $args[$var_name] === null) {
+                $template = str_replace($match[0], $match[2], $template);
+            } else {
+                $template = str_replace($match[0], $match[3], $template);
+            }
+        }
+
+        // Then handle unless without else
+        $i = 0;
+        while ($i++ < $max_iterations && preg_match(
+            '/\{\{unless \$(@?[A-Za-z0-9_]+)\}\}((?:(?!\{\{unless )(?!\{\{\/unless\}\}).)*?)\{\{\/unless\}\}/si',
+            $template,
+            $match
+        )) {
+            $var_name = $match[1];
+            if (!isset($args[$var_name]) || $args[$var_name] === '' || $args[$var_name] === null) {
+                $template = str_replace($match[0], $match[2], $template);
+            } else {
+                $template = str_replace($match[0], '', $template);
+            }
+        }
+
+        return $template;
+    }
+
+    /**
+     * Process remaining {{var|default:"value"}} patterns for variables not in $args.
+     * Also handles chained functions after default, e.g. {{var|default:"value"|ucwords}}
+     */
+    private function process_defaults(string $template): string
+    {
+        // Match {{var|default:"value"|optional_functions}} or {{var|default:'value'|...}}
+        if (preg_match_all(
+            '/\{\{\$?([A-Za-z0-9\-_]+)\|default:"([^"]*)"(\|[A-Za-z0-9\-_:|]+)?\}\}/U',
             $template,
             $matches
         )) {
-            return $template;
+            foreach ($matches[0] as $k => $pattern) {
+                $default_val = $matches[2][$k];
+                // Apply any chained functions after default
+                if (!empty($matches[3][$k])) {
+                    $functions = explode('|', ltrim($matches[3][$k], '|'));
+                    foreach ($functions as $fx) {
+                        if ($fx !== '') {
+                            $default_val = $this->apply_function($fx, $default_val);
+                        }
+                    }
+                }
+                $template = str_replace($pattern, $default_val, $template);
+            }
         }
 
-        foreach ($matches[0] as $k => $v) {
-            $var_name = $matches[1][$k];
-            if (isset($args[$var_name]) && $args[$var_name] !== '' && $args[$var_name] !== null) {
-                $template = str_replace($v, $matches[2][$k], $template);
-            } else {
-                $template = str_replace($v, '', $template);
+        // Also handle single-quoted defaults
+        if (preg_match_all(
+            '/\{\{\$?([A-Za-z0-9\-_]+)\|default:\'([^\']*)\'(\|[A-Za-z0-9\-_:|]+)?\}\}/U',
+            $template,
+            $matches
+        )) {
+            foreach ($matches[0] as $k => $pattern) {
+                $default_val = $matches[2][$k];
+                if (!empty($matches[3][$k])) {
+                    $functions = explode('|', ltrim($matches[3][$k], '|'));
+                    foreach ($functions as $fx) {
+                        if ($fx !== '') {
+                            $default_val = $this->apply_function($fx, $default_val);
+                        }
+                    }
+                }
+                $template = str_replace($pattern, $default_val, $template);
             }
         }
 
@@ -601,6 +723,17 @@ class viewfish
                 $max = isset($parts[1]) ? (int) $parts[1] : 100;
                 if (strlen($string) > $max) {
                     return substr($string, 0, $max) . '&#8230;';
+                }
+                return $string;
+
+            case 'default':
+                // Return the default value if the string is empty
+                // Rejoin remaining parts in case the value contained colons
+                $default_val = implode(':', array_slice($parts, 1));
+                // Strip surrounding quotes if present
+                $default_val = trim($default_val, '"\'');
+                if ($string === '') {
+                    return $default_val;
                 }
                 return $string;
 
