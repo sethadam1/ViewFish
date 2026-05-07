@@ -3,7 +3,7 @@
 /**
  * ViewFish - A secure PHP templating engine
  *
- * @see https://code.adamscheinberg.com/ViewFish
+ * @see https://sethadam1.com/code/ViewFish
  * @see https://github.com/sethadam1/ViewFish
  */
 
