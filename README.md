@@ -1,4 +1,4 @@
-# ViewFish Templating
+# ViewFish PHP Templating Engine
 
 ViewFish Templating is a simple PHP templating library that is designed to be extremely simple to use. There are three steps to using a ViewFish template. 
 
