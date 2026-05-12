@@ -23,7 +23,7 @@ $template	 = $t->load_template('template-name');
 $html = $t->render($template,$data);
 ```
 
-For examples, visit the [ViewFish demo gallery](https://sethadam1.com/code/ViewFish/examples).
+For examples, visit the [ViewFish demo gallery](https://viewfish.sethadam1.com/examples).
 
 ## Working with ViewFish
 
@@ -272,6 +272,6 @@ Example using loop indexes:
 </ol>
 ```
 
-For documentation, visit [sethadam1.com/code/ViewFish/](https://sethadam1.com/code/ViewFish/).
+For documentation, visit [viewfish.sethadam1.com](https://viewfish.sethadam1.com).
 
-For examples on ViewFish use, visit the [ViewFish demo gallery](https://sethadam1.com/code/ViewFish/examples).
+For examples on ViewFish use, visit the [ViewFish demo gallery](https://viewfish.sethadam1.com/examples).
