@@ -1,6 +1,6 @@
-# ViewFish Templating
+# ViewFish PHP Templating Engine
 
-ViewFish Templating is a simple PHP templating library that is designed to be extremely simple to use. There are three steps to using a ViewFish template. 
+ViewFish is a simple PHP templating library that is designed to be extremely simple to use. There are three steps to using a ViewFish template. 
 
 First, you instantiate the object and, optionally, pass it the path to templates. 
 
@@ -29,7 +29,7 @@ For examples, visit the [ViewFish demo gallery](https://viewfish.sethadam1.com/e
 
 ### Variables 
 
-ViewFish Templating uses double curly braces for template variable, e.g. `{{variable}}`. If a curly-brace-wrapped variable matches an index of your $data array, it will be replaced by the value of that array element your rendered template. If it doesn't match an argument, it will be left alone.  
+ViewFish uses double curly braces for template variable, e.g. `{{variable}}`. If a curly-brace-wrapped variable matches an index of your $data array, it will be replaced by the value of that array element your rendered template. If it doesn't match an argument, it will be left alone.  
 
 ViewFish uses double brackets for dynamic replacement. `[[year]]`, for example, will show the current year.  
 
@@ -100,7 +100,7 @@ Dynamic placeholders will be replaced in the rendered template, but accept no ar
 *$t->load_supported_functions()* will load all known supported string functions
 
 ## Caching
-ViewFish Templating supports a number of in-meory caching operations. In order to use caching, you'll need to have either [Memcache](https://www.php.net/memcache) or [Memcached](https://www.php.net/memcached) enabled. Once you have a Memcached object, you will pass it to your ViewFish object using the _enable_cache()_ method. 
+ViewFish supports a number of in-meory caching operations. In order to use caching, you'll need to have either [Memcache](https://www.php.net/memcache) or [Memcached](https://www.php.net/memcached) enabled. Once you have a Memcached object, you will pass it to your ViewFish object using the _enable_cache()_ method. 
   
 *$t->enable_cache(resource $memcache, int $ttl)* will enable memory caching of uncompiled templates. You can pass a Memcache or Memcached resource to enable to cache. An optional $ttl will specify the "time to live" of your memcached object, which defaults to 300 seconds. You may want to set $ttl to a large number to reduce file system reads. 1 day - 86400 seconds - or 30 days - which is a value of 2592000 - are reasonable numbers for templates that don't change often.   
  
